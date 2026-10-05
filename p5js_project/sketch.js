@@ -1,4 +1,8 @@
-//draw variables
+//assets
+let imgMarker;
+let imgMarkerLid;
+
+//page variables
 let pageBuffer;
 let pageOverlayBuffer;
 
@@ -17,6 +21,11 @@ let markedWords = [[8, 12], [13, 15], [30, 30]];
 let markedWordsProgress = [0, 0, 0];
 let markedWordsGoal = [0, 0, 0];
 
+//gui
+let markerX = 360;
+let markerY = 300;
+let markerSeperation = 0;
+
 //game variables
 let activeTool = "marker";
 //one of these:
@@ -27,12 +36,16 @@ let isMarking = false;
 let markingLine = -1; //index into pageLines array
 let markingIndex = -1; //index into markedWords array
 
-function setup() {
+async function setup() {
     createCanvas(600, 600);
 
     pageBuffer = createGraphics(pageWidth, pageHeight);
     pageOverlayBuffer = createGraphics(pageWidth, pageHeight);
     updatePage("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc lobortis dolor et lectus lacinia, a vestibulum odio viverra. Donec id ultrices dui. Sed justo quam, ultricies at ex a, ornare sodales nibh. Aliquam faucibus, eros a tincidunt placerat, augue nisl semper ante, et finibus nisi odio at mi. Curabitur id fermentum nulla, non malesuada tellus. Aenean pellentesque massa eu sem facilisis condimentum. Quisque sit amet massa ultrices lectus consectetur laoreet. Cras vel egestas magna. Donec vel dolor eget risus pharetra porttitor eget nec velit. ")
+
+    //load images
+    imgMarker = await loadImage("p5js_project/assets/marker.png");
+    imgMarkerLid = await loadImage("p5js_project/assets/marker_lid.png");
 }
 
 
@@ -147,49 +160,63 @@ function getHoveredWord(lineIndex) {
 
 
 
-
+//game logic
 function mousePressed(event) {
-    switch(activeTool) {
-        case "marker":
-            //get selected word
-            let selectedLine = getHoveredLine();
-            let selectedWord = -1;
-            if (selectedLine != -1) {
-                selectedWord = getHoveredWord(selectedLine);
-            }
-
-            if (selectedLine == -1 || selectedWord == -1)  {
-                console.log("marking failed: couldn't find slected word");
-                break; // can't start a marker selection if not hovering a word
-            }
-
-            let lineBoundingBoxes = pageLines[selectedLine].get("boundingBoxes");
-            let selectedWordBoundingBoxIndex = lineBoundingBoxes[selectedWord]
-            
-            let wordAlreadyMarked = false;
-            for (let i = 0; i < markedWords.length; i++) {
-                let mark = markedWords[i];
-                if (selectedWordBoundingBoxIndex >= mark[0] && selectedWordBoundingBoxIndex <= mark[1]) {
-                    wordAlreadyMarked = true;
-                    break;
+    if ((mouseX >= pageX && mouseX < pageX+pageWidth) && (mouseY >= pageY && mouseY < pageY+pageHeight)) {
+        
+        //page interactions
+        switch(activeTool) {
+            case "marker":
+                //get selected word
+                let selectedLine = getHoveredLine();
+                let selectedWord = -1;
+                if (selectedLine != -1) {
+                    selectedWord = getHoveredWord(selectedLine);
                 }
+
+                if (selectedLine == -1 || selectedWord == -1)  {
+                    console.log("marking failed: couldn't find slected word");
+                    break; // can't start a marker selection if not hovering a word
+                }
+
+                let lineBoundingBoxes = pageLines[selectedLine].get("boundingBoxes");
+                let selectedWordBoundingBoxIndex = lineBoundingBoxes[selectedWord]
+
+                let wordAlreadyMarked = false;
+                for (let i = 0; i < markedWords.length; i++) {
+                    let mark = markedWords[i];
+                    if (selectedWordBoundingBoxIndex >= mark[0] && selectedWordBoundingBoxIndex <= mark[1]) {
+                        wordAlreadyMarked = true;
+                        break;
+                    }
+                }
+
+                if (wordAlreadyMarked == true) {
+                    console.log("marking failed: word already marked");
+                    break; // can't start a marker selection from an already marked word
+                }
+
+                //selected starting word is good
+                console.log(selectedWordBoundingBoxIndex);
+                markedWords.push([selectedWordBoundingBoxIndex, selectedWordBoundingBoxIndex])
+                markedWordsProgress.push(0);
+                markedWordsGoal.push(0);
+                isMarking = true;
+                markingLine = selectedLine; //index into pageLines array
+                markingIndex = markedWords.length-1; //index into markedWords array
+
+                break;
+        }
+    } else {
+        //gui interactions
+
+        if ((mouseX >= markerX && mouseX < markerX+imgMarker.width) && (mouseY >= markerY && mouseY < markerY+imgMarker.height)) {
+            if (activeTool == "marker") {
+                activeTool = "hand";
+            } else {
+                activeTool = "marker";
             }
-
-            if (wordAlreadyMarked == true) {
-                console.log("marking failed: word already marked");
-                break; // can't start a marker selection from an already marked word
-            }
-
-            //selected starting word is good
-            console.log(selectedWordBoundingBoxIndex);
-            markedWords.push([selectedWordBoundingBoxIndex, selectedWordBoundingBoxIndex])
-            markedWordsProgress.push(0);
-            markedWordsGoal.push(0);
-            isMarking = true;
-            markingLine = selectedLine; //index into pageLines array
-            markingIndex = markedWords.length-1; //index into markedWords array
-
-            break;
+        }
     }
 }
 
@@ -235,9 +262,11 @@ function draw() {
 
     background(220);
     
+    //draw the page
     pageOverlayBuffer.clear();
     image(pageBuffer, pageX, pageY);
 
+    //draw page overlay
     //debug word selection visulationzation
     //let selectedLine = getHoveredLine();
     //if (selectedLine != -1) {
@@ -251,8 +280,7 @@ function draw() {
     //    }
     //}
 
-
-    //draw markers
+    //draw marks
     for (let i = 0; i < markedWords.length; i++) {
         let span = markedWords[i];
 
@@ -272,5 +300,10 @@ function draw() {
     }
 
     image(pageOverlayBuffer, pageX, pageY);
+
+    //draw gui
+    markerSeperation = lerp(markerSeperation, (activeTool == "marker")*50, 0.1);
+    image(imgMarker, markerX, markerY+markerSeperation);
+    image(imgMarkerLid, markerX, markerY-markerSeperation);
 
 }
