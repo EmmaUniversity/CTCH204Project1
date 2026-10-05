@@ -24,6 +24,8 @@ let pagePositionState = "entering"
 // interactable
 // offScreen
 
+let pageCanSend = false;
+let pageCanMark = false;
 let pageBoundingBoxes;
 let pageLines;
 let markedWords = [[8, 12], [13, 15], [30, 30]]; //example
@@ -59,12 +61,17 @@ let sendStartY = -1;
 let sendDestination = -1;
 let sendDistance = 0;
 
+//scenario
+let scenario;
+let documents;
+let currentDocument = 0;
+
+
 async function setup() {
     createCanvas(600, 600);
 
     pageBuffer = createGraphics(pageWidth, pageHeight);
     pageOverlayBuffer = createGraphics(pageWidth, pageHeight);
-    updatePage("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc lobortis dolor et lectus lacinia, a vestibulum odio viverra. Donec id ultrices dui. Sed justo quam, ultricies at ex a, ornare sodales nibh. Aliquam faucibus, eros a tincidunt placerat, augue nisl semper ante, et finibus nisi odio at mi. Curabitur id fermentum nulla, non malesuada tellus. Aenean pellentesque massa eu sem facilisis condimentum. Quisque sit amet massa ultrices lectus consectetur laoreet. Cras vel egestas magna. Donec vel dolor eget risus pharetra porttitor eget nec velit. ")
 
     //load images
     imgMarker = await loadImage("p5js_project/assets/marker.png");
@@ -73,7 +80,19 @@ async function setup() {
     pageDestinations.set(0, createVector(0, 650)); //down
     pageDestinations.set(1, createVector(650, 0)); //right
     pageDestinations.set(2, createVector(0, -650)); //up
+
+    //scenario
+    scenario = await loadJSON("p5js_project/scenario.json");
+    documents = scenario.documents;
+    loadDocument(0);
 }
+
+function loadDocument(index) {
+    updatePage(documents[index].document.body);
+    pageCanSend = documents[index].rules.canSend;
+    pageCanMark = documents[index].rules.canMark;
+}
+
 
 
 
@@ -204,6 +223,10 @@ function mousePressed(event) {
         //page interactions
         switch(activeTool) {
             case "marker":
+                if (!pageCanMark) {
+                    break;
+                } 
+
                 //get selected word
                 let selectedLine = getHoveredLine();
                 let selectedWord = -1;
@@ -245,6 +268,10 @@ function mousePressed(event) {
                 break;
             
             case "hand":
+                if (!pageCanSend) {
+                    break;
+                }    
+
                 isSending = true;
                 sendStartX = mouseX;
                 sendStartY = mouseY;
@@ -368,7 +395,7 @@ function draw() {
             if ((abs(pageAnimationOffsetX) < 2) && (abs(pageAnimationOffsetY) < 2)) {
                 pageAnimationOffsetX = 0;
                 pageAnimationOffsetY = 0;
-                pagePositionState = "interactable"
+                pagePositionState = "offscreen"
             }
 
             break;

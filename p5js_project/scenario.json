@@ -1,0 +1,115 @@
+{
+    "documents": [
+        {
+            "document": {
+                "header": "not implemented",
+                "footer": "also not implemented",
+                "body": "blah blah blah blah, oh no, better cross this out, blah blah, blah, this too, blah blahblah."
+            },
+            "rules": {
+                "toMark": [[4, 9], [13, 14]],
+                "directionEnter": 2,
+                "directionExit": 1,
+                "canSend": true,
+                "canMark": true
+            },
+            "effects": {
+                "timeElapsed": 1
+            }
+        },
+
+        {
+            "document": {
+                "header": "not implemented",
+                "footer": "also not implemented",
+                "body": "This is the second Document!! Oh boy! How excited you mumst be."
+            },
+            "rules": {
+                "toMark": [],
+                "directionEnter": 2,
+                "directionExit": 1,
+                "canSend": true,
+                "canMark": true
+            },
+            "effects": {
+                "timeElapsed": 1
+            }
+        },
+
+        {
+            "document": {
+                "header": "not implemented",
+                "footer": "also not implemented",
+                "body": "You've completed the game!! Good for you!!"
+            },
+            "rules": {
+                "toMark": [],
+                "directionEnter": 2,
+                "directionExit": 1,
+                "canSend": false,
+                "canMark": false
+            },
+            "effects": {
+                "timeElapsed": 1
+            }
+        }
+    ],
+
+
+    
+    "specialDocuments": {
+        "infraction1": {
+            "document": {
+                "header": "NOTICE OF INFRACTION",
+                "footer": "also not implemented",
+                "body": "you've dun screwed up, don't do it again."
+            },
+            "rules": {
+                "toMark": [],
+                "directionEnter": 2,
+                "directionExit": 1,
+                "canSend": true,
+                "canMark": false
+            },
+            "effects": {
+                "timeElapsed": 0
+            }
+        },
+
+        "infraction2": {
+            "document": {
+                "header": "NOTICE OF INFRACTION",
+                "footer": "also not implemented",
+                "body": "This is the second time you screwed up big time, do it once more and you'll be fired."
+            },
+            "rules": {
+                "toMark": [],
+                "directionEnter": 2,
+                "directionExit": 1,
+                "canSend": true,
+                "canMark": false
+            },
+            "effects": {
+                "timeElapsed": 0
+            }
+        },
+
+        "infraction3": {
+            "document": {
+                "header": "NOTICE OF TERMINATION",
+                "footer": "also not implemented",
+                "body": "Because of your repeated obvious mistakes, you have been fired from your position."
+            },
+            "rules": {
+                "toMark": [],
+                "directionEnter": 2,
+                "directionExit": 1,
+                "canSend": false,
+                "canMark": false
+            },
+            "effects": {
+                "timeElapsed": 0
+            }
+        }
+    }
+}
