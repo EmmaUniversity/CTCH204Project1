@@ -10,20 +10,33 @@ let pageWidth = 210*1.5;
 let pageHeight = 297*1.5;
 let pageX = 10;
 let pageY = 10;
-let pageBoundingBoxes;
-let pageLines;
 
+//page styling
 let pageStyleLineSpacing = 18;
 let pageStyleTextSize = 15;
 let pageStyleMargins = 10;
 
-let markedWords = [[8, 12], [13, 15], [30, 30]];
-let markedWordsProgress = [0, 0, 0];
-let markedWordsGoal = [0, 0, 0];
+//page interaction
+let pagePositionState = "entering"
+//one of:
+// entering
+// exiting
+// interactable
+// offScreen
 
+let pageBoundingBoxes;
+let pageLines;
+let markedWords = [[8, 12], [13, 15], [30, 30]]; //example
+let markedWordsProgress = [0, 0, 0]; //example
+let markedWordsGoal = [0, 0, 0]; //example
+
+//page animation
+let pageDestinationX = 0;
+let pageDestinationY = 0;
 let pageAnimationOffsetX = 0;
-let pageAnimationOffsetY = 0;
+let pageAnimationOffsetY = -650;
 let pageAnimationOffsetRotation = 0; //not currently implemented because I can't find a good way to rotate images without webGL :/
+let pageDestinations = new Map();
 
 //gui
 let markerX = 360;
@@ -56,6 +69,10 @@ async function setup() {
     //load images
     imgMarker = await loadImage("p5js_project/assets/marker.png");
     imgMarkerLid = await loadImage("p5js_project/assets/marker_lid.png");
+
+    pageDestinations.set(0, createVector(0, 650)); //down
+    pageDestinations.set(1, createVector(650, 0)); //right
+    pageDestinations.set(2, createVector(0, -650)); //up
 }
 
 
@@ -63,6 +80,9 @@ async function setup() {
 function updatePage(contents) {
     pageBoundingBoxes = [];
     pageLines = [];
+    markedWords = [];
+    markedWordsProgress = [];
+    markedWordsGoal = [];
     
     //top left origin for each word's drawing location
     let cursorX = pageStyleMargins;
@@ -134,31 +154,12 @@ function updatePage(contents) {
 }
 
 
-//did not work
-//function imageRotated(img, x, y, xOrigin, yOrigin, angle) {
-//    let width = img.width;
-//    let height = img.height;
-//
-//    //I just learned that p5js has vector, I wish I knew sooner >.<
-//    let topLeft = createVector(x-xOrigin, y-yOrigin).rotate(angle);
-//    let topRight = createVector((x+width)-xOrigin, y-yOrigin).rotate(angle);
-//    let bottomLeft = createVector(x-xOrigin, (y+height)-yOrigin).rotate(angle);
-//    let bottomRight = createVector((x+width)-xOrigin, (y+height)-yOrigin).rotate(angle);
-//
-//    texture(img);
-//    textureMode(NORMAL);
-//
-//    beginShape();
-//    vertex(topLeft.x, topLeft.y);
-//    vertex(bottomLeft.x, bottomLeft.y);
-//    vertex(bottomRight.x, bottomRight.y);
-//    vertex(topRight.x, topRight.y);
-//    endShape(CLOSE);
-//}
 
-
+//TODO: refactor to make not a function
 function sendDocument(destination) {
-
+    pageDestinationX = pageDestinations.get(destination).x;
+    pageDestinationY = pageDestinations.get(destination).y;
+    pagePositionState = "exiting";
 }
 
 function getHoveredLine() {
@@ -196,11 +197,9 @@ function getHoveredWord(lineIndex) {
     return selectedWordBoundingBox;
 }
 
-
-
 //game logic
 function mousePressed(event) {
-    if ((mouseX >= pageX && mouseX < pageX+pageWidth) && (mouseY >= pageY && mouseY < pageY+pageHeight)) {
+    if (pagePositionState == "interactable" && (mouseX >= pageX && mouseX < pageX+pageWidth) && (mouseY >= pageY && mouseY < pageY+pageHeight)) {
         
         //page interactions
         switch(activeTool) {
@@ -341,48 +340,85 @@ function draw() {
 
     background(220);
     
-    //set page offsets for sending animation
-    let offset;
-    switch (sendDestination) {
-        case -1:
+    //let pagePositionState = "entering"
+    //one of:
+    // entering
+    // exiting
+    // interactable
+    // offScreen
+
+    //page position animation
+    switch (pagePositionState) {
+        case "entering":
             pageAnimationOffsetX = lerp(pageAnimationOffsetX, 0, 0.1);
             pageAnimationOffsetY = lerp(pageAnimationOffsetY, 0, 0.1);
-            pageAnimationOffsetRotation = lerp(pageAnimationOffsetRotation, 0, 0.1);
+
+            if ((abs(pageAnimationOffsetX) < 2) && (abs(pageAnimationOffsetY) < 2)) {
+                pageAnimationOffsetX = 0;
+                pageAnimationOffsetY = 0;
+                pagePositionState = "interactable"
+            }
+
             break;
         
-        case 0:
-            //sending down
-            offset = max(0, sendDistance-60); // deadzone
-            offset = sin(min(offset/100, PI/2)); //curve
-            offset = offset*50; //magnitude
+        case "exiting":
+            pageAnimationOffsetX = lerp(pageAnimationOffsetX, pageDestinationX, 0.1);
+            pageAnimationOffsetY = lerp(pageAnimationOffsetY, pageDestinationY, 0.1);
 
-            pageAnimationOffsetY = lerp(pageAnimationOffsetY, offset, 0.1);
-            pageAnimationOffsetX = lerp(pageAnimationOffsetX, 0, 0.1);
+            if ((abs(pageAnimationOffsetX) < 2) && (abs(pageAnimationOffsetY) < 2)) {
+                pageAnimationOffsetX = 0;
+                pageAnimationOffsetY = 0;
+                pagePositionState = "interactable"
+            }
+
             break;
         
-        case 1:
-            //sending right
-            offset = max(0, sendDistance-60); // deadzone
-            offset = sin(min(offset/100, PI/2)); //curve
-            offset = offset*100; //magnitude
+        case "offscreen":
 
-            pageAnimationOffsetY = lerp(pageAnimationOffsetY, 0, 0.1);
-            pageAnimationOffsetX = lerp(pageAnimationOffsetX, offset, 0.1);
             break;
         
-        case 2:
-            //sending up
-            offset = max(0, sendDistance-60); // deadzone
-            offset = sin(min(offset/100, PI/2)); //curve
-            offset = offset*50; //magnitude
+        case "interactable":
+            let offset;
+            switch (sendDestination) {
+                case -1:
+                    pageAnimationOffsetX = lerp(pageAnimationOffsetX, 0, 0.1);
+                    pageAnimationOffsetY = lerp(pageAnimationOffsetY, 0, 0.1);
+                    pageAnimationOffsetRotation = lerp(pageAnimationOffsetRotation, 0, 0.1);
+                    break;
+                
+                case 0:
+                    //sending down
+                    offset = max(0, sendDistance-60); // deadzone
+                    offset = sin(min(offset/100, PI/2)); //curve
+                    offset = offset*50; //magnitude
 
-            pageAnimationOffsetY = lerp(pageAnimationOffsetY, -offset, 0.1);
-            pageAnimationOffsetX = lerp(pageAnimationOffsetX, 0, 0.1);
+                    pageAnimationOffsetY = lerp(pageAnimationOffsetY, offset, 0.1);
+                    pageAnimationOffsetX = lerp(pageAnimationOffsetX, 0, 0.1);
+                    break;
+                
+                case 1:
+                    //sending right
+                    offset = max(0, sendDistance-60); // deadzone
+                    offset = sin(min(offset/100, PI/2)); //curve
+                    offset = offset*100; //magnitude
+
+                    pageAnimationOffsetY = lerp(pageAnimationOffsetY, 0, 0.1);
+                    pageAnimationOffsetX = lerp(pageAnimationOffsetX, offset, 0.1);
+                    break;
+                
+                case 2:
+                    //sending up
+                    offset = max(0, sendDistance-60); // deadzone
+                    offset = sin(min(offset/100, PI/2)); //curve
+                    offset = offset*50; //magnitude
+
+                    pageAnimationOffsetY = lerp(pageAnimationOffsetY, -offset, 0.1);
+                    pageAnimationOffsetX = lerp(pageAnimationOffsetX, 0, 0.1);
+                    break;
+            }
+            
             break;
-
-
-
-    }     
+    }
 
     //draw the page
     pageOverlayBuffer.clear();
