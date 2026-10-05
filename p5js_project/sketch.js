@@ -198,7 +198,33 @@ function mousePressed(event) {
 //runs before draw code to handle frame by frame game logic
 //that isn't related to the visuals
 function tick() {
-    
+    if (isMarking) {
+        if (!mouseIsPressed) {
+            isMarking = false;
+            markingLine = -1;
+            markingIndex = -1;
+        } else {
+            let selectedWord = getHoveredWord(markingLine);
+            if (selectedWord != -1) {
+                //exapnd marker selection
+                let lineBoundingBoxes = pageLines[markingLine].get("boundingBoxes");
+                let selectedWordBoundingBoxIndex = lineBoundingBoxes[selectedWord]
+                if (selectedWordBoundingBoxIndex < markedWords[markingIndex][0]) {
+                    //fix animation jank when marking opposite english reading order
+                    let bbOld = pageBoundingBoxes[markedWords[markingIndex][0]]
+                    let bbNew = pageBoundingBoxes[selectedWordBoundingBoxIndex]
+                    let xDif = bbOld.x-bbNew.x
+                    markedWordsProgress[markingIndex] += xDif
+                    
+                    markedWords[markingIndex][0] = selectedWordBoundingBoxIndex
+                    
+                } else if (selectedWordBoundingBoxIndex > markedWords[markingIndex][1]) {
+                    markedWords[markingIndex][1] = selectedWordBoundingBoxIndex
+                }
+            }
+        }
+    }
+
 }
 
 
@@ -238,10 +264,6 @@ function draw() {
         //marker animation
         markedWordsGoal[i] = spanWidth
         markedWordsProgress[i] = lerp(markedWordsProgress[i], markedWordsGoal[i], 0.1)
-        //marker animation sound
-        if (markedWordsGoal[i]-markedWordsProgress[i] > 3) {
-            //TODO: marker sound (if I have time)
-        }
 
         //draw the mark
         pageOverlayBuffer.noStroke();
