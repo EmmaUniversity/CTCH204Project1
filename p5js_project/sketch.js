@@ -21,20 +21,30 @@ let markedWords = [[8, 12], [13, 15], [30, 30]];
 let markedWordsProgress = [0, 0, 0];
 let markedWordsGoal = [0, 0, 0];
 
+let pageAnimationOffsetX = 0;
+let pageAnimationOffsetY = 0;
+let pageAnimationOffsetRotation = 0; //not currently implemented because I can't find a good way to rotate images without webGL :/
+
 //gui
 let markerX = 360;
 let markerY = 300;
 let markerSeperation = 0;
 
 //game variables
-let activeTool = "marker";
-//one of these:
+let activeTool = "hand";
+//one of:
 // marker
 // hand
 
 let isMarking = false;
 let markingLine = -1; //index into pageLines array
 let markingIndex = -1; //index into markedWords array
+
+let isSending = false;
+let sendStartX = -1;
+let sendStartY = -1;
+let sendDestination = -1;
+let sendDistance = 0;
 
 async function setup() {
     createCanvas(600, 600);
@@ -123,6 +133,34 @@ function updatePage(contents) {
     
 }
 
+
+//did not work
+//function imageRotated(img, x, y, xOrigin, yOrigin, angle) {
+//    let width = img.width;
+//    let height = img.height;
+//
+//    //I just learned that p5js has vector, I wish I knew sooner >.<
+//    let topLeft = createVector(x-xOrigin, y-yOrigin).rotate(angle);
+//    let topRight = createVector((x+width)-xOrigin, y-yOrigin).rotate(angle);
+//    let bottomLeft = createVector(x-xOrigin, (y+height)-yOrigin).rotate(angle);
+//    let bottomRight = createVector((x+width)-xOrigin, (y+height)-yOrigin).rotate(angle);
+//
+//    texture(img);
+//    textureMode(NORMAL);
+//
+//    beginShape();
+//    vertex(topLeft.x, topLeft.y);
+//    vertex(bottomLeft.x, bottomLeft.y);
+//    vertex(bottomRight.x, bottomRight.y);
+//    vertex(topRight.x, topRight.y);
+//    endShape(CLOSE);
+//}
+
+
+function sendDocument(destination) {
+
+}
+
 function getHoveredLine() {
     if ((mouseX >= pageX && mouseX < pageX+pageWidth) && (mouseY >= pageY && mouseY < pageY+pageHeight)) {
         let hoveredLine = -1;
@@ -206,6 +244,13 @@ function mousePressed(event) {
                 markingIndex = markedWords.length-1; //index into markedWords array
 
                 break;
+            
+            case "hand":
+                isSending = true;
+                sendStartX = mouseX;
+                sendStartY = mouseY;
+
+                break;
         }
     } else {
         //gui interactions
@@ -252,6 +297,40 @@ function tick() {
         }
     }
 
+    if (isSending) {
+        let xx = mouseX-sendStartX;
+        let yy = mouseY-sendStartY;
+        sendDistance = sqrt((xx*xx)+(yy*yy))
+
+        if (!mouseIsPressed) {
+            if (sendDistance > 64 && sendDestination != -1) {
+                sendDocument(sendDestination);
+            }
+
+            sendDestination = -1;
+            sendDistance = 0;
+            sendStartX = -1;
+            sendStartY = -1;
+            isSending = false;
+
+        } else {
+            //set send destination based on what 90 degree quadrent mouse is in
+            if (abs(xx) > abs(yy)) {
+                if (xx < 0) {
+                    sendDestination = -1;
+                } else {
+                    sendDestination = 1;
+                }
+            } else {
+                if (yy < 0) {
+                    sendDestination = 2;
+                } else {
+                    sendDestination = 0;
+                }
+            }
+        }
+    }
+
 }
 
 
@@ -262,9 +341,52 @@ function draw() {
 
     background(220);
     
+    //set page offsets for sending animation
+    let offset;
+    switch (sendDestination) {
+        case -1:
+            pageAnimationOffsetX = lerp(pageAnimationOffsetX, 0, 0.1);
+            pageAnimationOffsetY = lerp(pageAnimationOffsetY, 0, 0.1);
+            pageAnimationOffsetRotation = lerp(pageAnimationOffsetRotation, 0, 0.1);
+            break;
+        
+        case 0:
+            //sending down
+            offset = max(0, sendDistance-60); // deadzone
+            offset = sin(min(offset/100, PI/2)); //curve
+            offset = offset*50; //magnitude
+
+            pageAnimationOffsetY = lerp(pageAnimationOffsetY, offset, 0.1);
+            pageAnimationOffsetX = lerp(pageAnimationOffsetX, 0, 0.1);
+            break;
+        
+        case 1:
+            //sending right
+            offset = max(0, sendDistance-60); // deadzone
+            offset = sin(min(offset/100, PI/2)); //curve
+            offset = offset*100; //magnitude
+
+            pageAnimationOffsetY = lerp(pageAnimationOffsetY, 0, 0.1);
+            pageAnimationOffsetX = lerp(pageAnimationOffsetX, offset, 0.1);
+            break;
+        
+        case 2:
+            //sending up
+            offset = max(0, sendDistance-60); // deadzone
+            offset = sin(min(offset/100, PI/2)); //curve
+            offset = offset*50; //magnitude
+
+            pageAnimationOffsetY = lerp(pageAnimationOffsetY, -offset, 0.1);
+            pageAnimationOffsetX = lerp(pageAnimationOffsetX, 0, 0.1);
+            break;
+
+
+
+    }     
+
     //draw the page
     pageOverlayBuffer.clear();
-    image(pageBuffer, pageX, pageY);
+    image(pageBuffer, pageX+pageAnimationOffsetX, pageY+pageAnimationOffsetY);
 
     //draw page overlay
     //debug word selection visulationzation
@@ -299,7 +421,7 @@ function draw() {
         pageOverlayBuffer.rect(spanStart, bbStart.y, markedWordsProgress[i], bbStart.h);
     }
 
-    image(pageOverlayBuffer, pageX, pageY);
+    image(pageOverlayBuffer, pageX+pageAnimationOffsetX, pageY+pageAnimationOffsetY);
 
     //draw gui
     markerSeperation = lerp(markerSeperation, (activeTool == "marker")*50, 0.1);
