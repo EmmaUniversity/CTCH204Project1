@@ -3,7 +3,9 @@ let pageWidth = 210*1.5;
 let pageHeight = 297*1.5;
 let pageBoundingBoxes;
 
-let pageStyleLineSpacing = 14;
+let pageStyleLineSpacing = 18;
+let pageStyleTextSize = 15;
+let pageStyleMargins = 10;
 
 function setup() {
     createCanvas(600, 600);
@@ -14,33 +16,41 @@ function setup() {
 
 
 function updatePage(contents) {
-    
     pageBoundingBoxes = [];
     
-    let cursorX = 10;
-    let cursorY = 20;
+    //top left origin for each word's drawing location
+    let cursorX = pageStyleMargins;
+    let cursorY = pageStyleMargins;
     let words = contents.split(" ");
 
-    pageBuffer.background(245)
+    //draw setup
+    pageBuffer.background(245);
+    pageBuffer.textSize(pageStyleTextSize);
+    pageBuffer.textAlign(LEFT, TOP);
 
     for (let i = 0; i < words.length; i++) {
-        
+        //space needs to come before word because the textBounds function does not consider trailing spaces
         let word = " "+words[i];
-        let wordBounds = textBounds(word, cursorX, cursorY);
+        let wordBounds = pageBuffer.textBounds(word, cursorX, cursorY);
         let wordEnd = wordBounds.x+wordBounds.w;
 
-        if (wordEnd < pageWidth-10) {
+        if (wordEnd < pageWidth-pageStyleMargins) {
+            //word does not go past margin, drawn normally
             pageBuffer.text(word, cursorX, cursorY);
             cursorX = wordEnd;
             
             pageBoundingBoxes.push(wordBounds);
 
         } else {
+            //word goes past margin, move cursor to next line and reset to start of line
+            //remove leading space from first word of each line to create more consistant margin
             word = word.slice(1)
 
             cursorY += pageStyleLineSpacing;
-            cursorX = 10;
-            wordBounds = textBounds(word, cursorX, cursorY);
+            cursorX = pageStyleMargins;
+            
+            //update word bounds accounting for new position
+            wordBounds = pageBuffer.textBounds(word, cursorX, cursorY);
             wordEnd = wordBounds.x+wordBounds.w;
 
             pageBuffer.text(word, cursorX, cursorY);
@@ -50,8 +60,6 @@ function updatePage(contents) {
 
         }
     }
-
-    text(pageBoundingBoxes.length, 10, 10)
 
     //bounding box test drawing
     for (let i = 0; i < pageBoundingBoxes.length; i++) {
