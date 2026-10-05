@@ -15,10 +15,10 @@ let pageStyleMargins = 10;
 
 let markedWords = [[8, 12], [13, 15], [30, 30]];
 let markedWordsProgress = [0, 0, 0];
-let markedWordsGoal = [0, 0, 0]
+let markedWordsGoal = [0, 0, 0];
 
 //game variables
-let activeTool = "marker"
+let activeTool = "marker";
 //one of these:
 // marker
 // hand
@@ -100,7 +100,7 @@ function updatePage(contents) {
         }
     }
 
-    //bounding box test drawing
+    //debug bounding box visualization
     //for (let i = 0; i < pageBoundingBoxes.length; i++) {
     //    let bb = pageBoundingBoxes[i];
     //    pageBuffer.noStroke()
@@ -151,6 +151,43 @@ function getHoveredWord(lineIndex) {
 function mousePressed(event) {
     switch(activeTool) {
         case "marker":
+            //get selected word
+            let selectedLine = getHoveredLine();
+            let selectedWord = -1;
+            if (selectedLine != -1) {
+                selectedWord = getHoveredWord(selectedLine);
+            }
+
+            if (selectedLine == -1 || selectedWord == -1)  {
+                console.log("marking failed: couldn't find slected word");
+                break; // can't start a marker selection if not hovering a word
+            }
+
+            let lineBoundingBoxes = pageLines[selectedLine].get("boundingBoxes");
+            let selectedWordBoundingBoxIndex = lineBoundingBoxes[selectedWord]
+            
+            let wordAlreadyMarked = false;
+            for (let i = 0; i < markedWords.length; i++) {
+                let mark = markedWords[i];
+                if (selectedWordBoundingBoxIndex >= mark[0] && selectedWordBoundingBoxIndex <= mark[1]) {
+                    wordAlreadyMarked = true;
+                    break;
+                }
+            }
+
+            if (wordAlreadyMarked == true) {
+                console.log("marking failed: word already marked");
+                break; // can't start a marker selection from an already marked word
+            }
+
+            //selected starting word is good
+            console.log(selectedWordBoundingBoxIndex);
+            markedWords.push([selectedWordBoundingBoxIndex, selectedWordBoundingBoxIndex])
+            markedWordsProgress.push(0);
+            markedWordsGoal.push(0);
+            isMarking = true;
+            markingLine = selectedLine; //index into pageLines array
+            markingIndex = markedWords.length-1; //index into markedWords array
 
             break;
     }
@@ -160,7 +197,7 @@ function mousePressed(event) {
 
 //runs before draw code to handle frame by frame game logic
 //that isn't related to the visuals
-function step() {
+function tick() {
     
 }
 
@@ -168,24 +205,25 @@ function step() {
 
 function draw() {
     //execute game logic before drawing the frame
-    step()
+    tick()
 
     background(220);
     
     pageOverlayBuffer.clear();
     image(pageBuffer, pageX, pageY);
 
-    let selectedLine = getHoveredLine();
-    if (selectedLine != -1) {
-        let selectedWord = getHoveredWord(selectedLine);
-        if (selectedWord != -1) {
-            let lineBoundingBoxes = pageLines[selectedLine].get("boundingBoxes");
-            let bb = pageBoundingBoxes[lineBoundingBoxes[selectedWord]];
-            pageOverlayBuffer.noStroke();
-            pageOverlayBuffer.fill(0, 255, 0, 90);
-            pageOverlayBuffer.rect(bb.x, bb.y, bb.w, bb.h);
-        }
-    }
+    //debug word selection visulationzation
+    //let selectedLine = getHoveredLine();
+    //if (selectedLine != -1) {
+    //    let selectedWord = getHoveredWord(selectedLine);
+    //    if (selectedWord != -1) {
+    //        let lineBoundingBoxes = pageLines[selectedLine].get("boundingBoxes");
+    //        let bb = pageBoundingBoxes[lineBoundingBoxes[selectedWord]];
+    //        pageOverlayBuffer.noStroke();
+    //        pageOverlayBuffer.fill(0, 255, 0, 90);
+    //        pageOverlayBuffer.rect(bb.x, bb.y, bb.w, bb.h);
+    //    }
+    //}
 
 
     //draw markers
