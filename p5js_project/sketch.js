@@ -91,7 +91,7 @@ async function setup() {
 }
 
 function loadDocument(index) {
-    let positionEnter = pageDestinations[documents[index].rules.directionEnter];
+    let positionEnter = pageDestinations.get(documents[index].rules.directionEnter);
     pageAnimationOffsetX = positionEnter.x
     pageAnimationOffsetY = positionEnter.y
     
