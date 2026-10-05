@@ -65,7 +65,10 @@ let sendDistance = 0;
 let scenario;
 let documents;
 let currentDocument = 0;
+let strikes = 0;
 
+let ruleExitDirection = 0;
+let ruleToMark;
 
 async function setup() {
     createCanvas(600, 600);
@@ -88,12 +91,36 @@ async function setup() {
 }
 
 function loadDocument(index) {
-    updatePage(documents[index].document.body);
+    let positionEnter = pageDestinations[documents[index].rules.directionEnter];
+    pageAnimationOffsetX = positionEnter.x
+    pageAnimationOffsetY = positionEnter.y
+    
+    ruleExitDirection = documents[index].rules.directionExit;
+    ruleToMark = documents[index].rules.toMark;
     pageCanSend = documents[index].rules.canSend;
     pageCanMark = documents[index].rules.canMark;
+
+    updatePage(documents[index].document.body);
 }
 
+//TODO: fix code duplication between this and load document
+function loadInfraction(index) {
 
+}
+ 
+function completeDocument() {
+    currentDocument++;
+    
+    //check for marked word compliance
+
+    //check for send direction compliance
+    
+    loadDocument(currentDocument);
+}
+
+function completeInfraction() {
+    loadDocument(currentDocument);
+}
 
 
 function updatePage(contents) {
