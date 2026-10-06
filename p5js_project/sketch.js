@@ -62,6 +62,11 @@ let calendarPages = [];
 let calendarMonths = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 let calendarCenterOffset = 143;
 
+let tallyX = 500;
+let tallyY = 10;
+let tallyWidth = 90;
+let tallyHeight = 285;
+
 //game variables
 let activeTool = "hand";
 //one of:
@@ -161,12 +166,13 @@ function loadInfraction(index) {
     pageCanSend = infaction.rules.canSend;
     pageCanMark = infaction.rules.canMark;
 
-    updatePage(infaction.document.body);
+    updatePage(infaction.document.body, infaction.document.header, infaction.document.footer);
 }
  
 function completeDocument() {
     if (!pageIsInfraction) {
         time += documents[currentDocument].effects.timeElapsed;
+        spending += documents[currentDocument].effects.moneySpent;
         currentDocument++;
     }
 
@@ -284,7 +290,6 @@ function updatePage(contents, header, footer) {
 }
 
 
-
 //TODO: refactor to make not a function
 function sendDocument(destination) {
     pageDestinationX = pageDestinations.get(destination).x;
@@ -292,6 +297,8 @@ function sendDocument(destination) {
     pagePositionState = "exiting";
 }
 
+
+//helper functions
 function getHoveredLine() {
     if ((mouseX >= pageX && mouseX < pageX+pageWidth) && (mouseY >= pageY && mouseY < pageY+pageHeight)) {
         let hoveredLine = -1;
@@ -326,6 +333,33 @@ function getHoveredWord(lineIndex) {
     
     return selectedWordBoundingBox;
 }
+
+function dollarsToString(number) {
+    if (number < 10000) {
+        return str(floor(number))
+    } else if (number < 100000) {
+        return str(floor(number/100)/10)+"K"
+    } else if (number < 10000000) {
+        return str(floor(number/1000))+"K"
+    } else if (number < 100000000) {
+        return str(floor(number/100000)/10)+"M"
+    } else if (number < 10000000000) {
+        return str(floor(number/1000000))+"M"
+    } else {
+         return str(floor(number/100000000)/10)+"B"
+    }
+}
+
+function timeToString(number) {
+    if (number < 360) {
+        return str(number) + " days"
+    } else {
+        return str(floor(number/360)) + " years\n" + str(number%360) + " days"
+    }
+}
+
+
+
 
 //game logic
 function mousePressed(event) {
@@ -529,7 +563,7 @@ function draw() {
 
     background(220);
 
-    //draw pages
+    //draw calendar
     //top pages
     for (let i = 0; i < calendarPages.length; i++) {
         let calendarPage = calendarPages[i];
@@ -560,13 +594,29 @@ function draw() {
             tint(255+((abs(cos(angle))-1)*128))
             image(buffer, calendarX, calendarY+yOffset, imgCalendarPageFront.width, height)
         }
+        //in a weird spot, but it's the only way to make it overlap with
+        //all flap pages, but not with flipping pages
         if (i == calendarPages.length-1) {
             image(imgCalendarRings, calendarX, calendarY);
         }
     }
 
-    tint(255)
+    tint(255);
 
+
+    //draw tallys
+    noStroke();
+    fill(245);
+    rect(tallyX, tallyY, tallyWidth, tallyHeight);
+    textAlign(CENTER, TOP);
+    fill(0);
+    textSize(pageStyleTextSize);
+    text("time\nspent", tallyX+(tallyWidth/2), 30);
+    text(timeToString(time), tallyX+(tallyWidth/2), 70);
+    text("money\nspent", tallyX+(tallyWidth/2), 120);
+    text(dollarsToString(spending), tallyX+(tallyWidth/2), 160);
+    text("transit\nbuilt", tallyX+(tallyWidth/2), 210);
+    text("0 km", tallyX+(tallyWidth/2), 250);
 
     //page position animation
     switch (pagePositionState) {

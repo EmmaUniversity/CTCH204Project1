@@ -14,7 +14,8 @@
                 "canMark": true
             },
             "effects": {
-                "timeElapsed": 1
+                "timeElapsed": 1,
+                "moneySpent": 0
             }
         },
 
@@ -32,7 +33,8 @@
                 "canMark": true
             },
             "effects": {
-                "timeElapsed": 1
+                "timeElapsed": 1,
+                "moneySpent": 10000000
             }
         },
 
@@ -50,18 +52,19 @@
                 "canMark": false
             },
             "effects": {
-                "timeElapsed": 1
+                "timeElapsed": 1,
+                "moneySpent": 0
             }
         }
     ],
 
 
-    
+
     "specialDocuments": {
         "infraction1": {
             "document": {
                 "header": "NOTICE OF INFRACTION",
-                "footer": "also not implemented",
+                "footer": "to: you,   from: the legislature",
                 "body": "you've dun screwed up, don't do it again."
             },
             "rules": {
@@ -79,7 +82,7 @@
         "infraction2": {
             "document": {
                 "header": "NOTICE OF INFRACTION",
-                "footer": "also not implemented",
+                "footer": "to: you,   from: the legislature",
                 "body": "This is the second time you screwed up big time, do it once more and you'll be fired."
             },
             "rules": {
@@ -97,7 +100,7 @@
         "infraction3": {
             "document": {
                 "header": "NOTICE OF TERMINATION",
-                "footer": "also not implemented",
+                "footer": "to: you,   from: the legislature",
                 "body": "Because of your repeated obvious mistakes, you have been fired from your position."
             },
             "rules": {
