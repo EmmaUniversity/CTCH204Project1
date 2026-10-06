@@ -17,7 +17,10 @@ let pageY = 10;
 
 //page styling
 let pageStyleLineSpacing = 18;
+let pageStyleHeaderSpace = 33
 let pageStyleTextSize = 15;
+let pageStyleHeaderSize = 25;
+let pageStyleFotterSize = 15;
 let pageStyleMargins = 10;
 
 //page interaction
@@ -81,8 +84,11 @@ let documents;
 let infractionKeys = ["infraction1", "infraction2", "infraction3"];
 
 let currentDocument = 0;
+
 let strikes = 0;
 let time = 0;
+let spending = 0;
+let trackBuilt = 0;
 
 let ruleExitDirection = 0;
 let ruleToMark;
@@ -137,7 +143,7 @@ function loadDocument(index) {
     pageCanSend = documents[index].rules.canSend;
     pageCanMark = documents[index].rules.canMark;
 
-    updatePage(documents[index].document.body);
+    updatePage(documents[index].document.body, documents[index].document.header, documents[index].document.footer);
 }
 
 //TODO: fix code duplication between this and load document
@@ -160,10 +166,12 @@ function loadInfraction(index) {
  
 function completeDocument() {
     if (!pageIsInfraction) {
+        time += documents[currentDocument].effects.timeElapsed;
         currentDocument++;
     }
-    
+
     //check for marked word compliance
+    //TODO
 
     //check for send direction compliance
     if (!sendDestination == ruleExitDirection) {
@@ -175,10 +183,7 @@ function completeDocument() {
     loadDocument(currentDocument);
 }
 
-function completeInfraction() {
-    loadDocument(currentDocument);
-}
-
+//add a calendarPage
 function addPage(offset, angle=0) {
     let calendarPage = new Map();
     calendarPage.set("buffer", createGraphics(calendarPageWidth, calendarPageHeight));
@@ -191,22 +196,33 @@ function addPage(offset, angle=0) {
     calendarPages.push(calendarPage);
 }
 
-function updatePage(contents) {
+//update the document page
+function updatePage(contents, header, footer) {
     pageBoundingBoxes = [];
     pageLines = [];
     markedWords = [];
     markedWordsProgress = [];
     markedWordsGoal = [];
+    pageBuffer.background(245);
     
-    //top left origin for each word's drawing location
-    let cursorX = pageStyleMargins;
-    let cursorY = pageStyleMargins;
-    
+    //header
+    pageBuffer.textAlign(LEFT, TOP);
+    pageBuffer.textSize(pageStyleHeaderSize);
+    pageBuffer.text(header, pageStyleMargins, pageStyleMargins);
+
+    //footer
+    pageBuffer.textAlign(LEFT, BOTTOM);
+    pageBuffer.textSize(pageStyleFotterSize);
+    pageBuffer.text(footer, pageStyleMargins, pageHeight-pageStyleMargins);
+
     //body text
     let words = contents.split(" ");
 
+    //top left origin for each word's drawing location
+    let cursorX = pageStyleMargins;
+    let cursorY = pageStyleMargins+pageStyleHeaderSpace;
+
     //draw setup
-    pageBuffer.background(245);
     pageBuffer.textSize(pageStyleTextSize);
     pageBuffer.textAlign(LEFT, TOP);
 
