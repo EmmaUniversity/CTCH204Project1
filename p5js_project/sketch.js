@@ -6,6 +6,7 @@ let imgCalendarPageFront;
 let imgCalendarRings;
 let imgCalendarCrosses = [];
 
+
 //page variables
 let pageBuffer;
 let pageOverlayBuffer;
@@ -49,6 +50,7 @@ let pageAnimationOffsetY = -650;
 let pageAnimationOffsetRotation = 0; //not currently implemented because I can't find a good way to rotate images without webGL :/
 let pageDestinations = new Map();
 
+
 //gui
 let markerX = 0;
 let markerY = 480;
@@ -73,6 +75,7 @@ let agendaWidth = 255;
 let agendaHeight = 285;
 let agendaText = "";
 
+
 //game variables
 let activeTool = "hand";
 //one of:
@@ -89,6 +92,7 @@ let sendStartY = -1;
 let sendDestination = -1;
 let sendDistance = 0;
 
+
 //scenario
 let scenario;
 let documents;
@@ -99,10 +103,10 @@ let currentDocument = 0;
 let strikes = 0;
 let time = 0;
 let spending = 0;
-let trackBuilt = 0;
 
 let ruleExitDirection = 0;
 let ruleToMark;
+
 
 async function setup() {
     createCanvas(600, 600);
@@ -138,9 +142,13 @@ async function setup() {
     loadDocument(0);
 
     //calendar setup
-    addPage(-1, PI);
-    addPage(0);
+    addCalendarPage(-1, PI);
+    addCalendarPage(0);
 }
+
+
+
+// -<>- SCENARIO -<>-
 
 function loadDocument(index) {
     let positionEnter = pageDestinations.get(documents[index].rules.directionEnter);
@@ -260,7 +268,7 @@ function completeDocument() {
 }
 
 //add a calendarPage
-function addPage(offset, angle=0) {
+function addCalendarPage(offset, angle=0) {
     let calendarPage = new Map();
     calendarPage.set("buffer", createGraphics(calendarPageWidth, calendarPageHeight));
     calendarPage.get("buffer").image(imgCalendarPageFront, 0, 0)
@@ -348,27 +356,13 @@ function updatePage(contents, header, footer) {
 
         }
     }
-
-    //debug bounding box visualization
-    //for (let i = 0; i < pageBoundingBoxes.length; i++) {
-    //    let bb = pageBoundingBoxes[i];
-    //    pageBuffer.noStroke()
-    //    pageBuffer.fill(random(255), random(255), random(255), 80)
-    //    pageBuffer.rect(bb.x, bb.y, bb.w, bb.h);
-    //}
     
 }
 
 
-//TODO: refactor to make not a function
-function sendDocument(destination) {
-    pageDestinationX = pageDestinations.get(destination).x;
-    pageDestinationY = pageDestinations.get(destination).y;
-    pagePositionState = "exiting";
-}
 
+// -<>- HELPER FUNCTIONS -<>-
 
-//helper functions
 function getHoveredLine() {
     if ((mouseX >= pageX && mouseX < pageX+pageWidth) && (mouseY >= pageY && mouseY < pageY+pageHeight)) {
         let hoveredLine = -1;
@@ -430,8 +424,8 @@ function timeToString(number) {
 
 
 
+// -<>- INPUT -<>-
 
-//game logic
 function mousePressed(event) {
     if (pagePositionState == "interactable" && (mouseX >= pageX && mouseX < pageX+pageWidth) && (mouseY >= pageY && mouseY < pageY+pageHeight)) {
         
@@ -507,6 +501,8 @@ function mousePressed(event) {
 
 
 
+// -<>- FRAME LOOP -<>-
+
 //runs before draw code to handle frame by frame game logic
 //that isn't related to the visuals
 function tick() {
@@ -537,14 +533,19 @@ function tick() {
         }
     }
 
+
+    //paper dragging animation
     if (isSending) {
         let xx = mouseX-sendStartX;
         let yy = mouseY-sendStartY;
         sendDistance = sqrt((xx*xx)+(yy*yy))
 
+        //released paper
         if (!mouseIsPressed) {
             if (sendDistance > 64 && sendDestination != -1) {
-                sendDocument(sendDestination);
+                pageDestinationX = pageDestinations.get(destination).x;
+                pageDestinationY = pageDestinations.get(destination).y;
+                pagePositionState = "exiting";
             }
 
             sendDistance = 0;
@@ -570,6 +571,7 @@ function tick() {
         }
     }
 
+
     //update calendar pages
     for (let i = 0; i < calendarPages.length; i++) {
         let calendarPage = calendarPages[i];
@@ -592,7 +594,7 @@ function tick() {
 
             if ((relativeTime > 30) && (calendarPage.get("flipping") == false) && (calendarPage.get("angle") < PI/2) && (marksCurrent >= 30)) {
                 calendarPage.set("flipping", true);
-                addPage(offset+1);
+                addCalendarPage(offset+1);
             }
 
             relativeTime = min(relativeTime, 30);
@@ -622,7 +624,6 @@ function tick() {
     }
 
 }
-
 
 
 function draw() {
@@ -668,7 +669,6 @@ function draw() {
             image(imgCalendarRings, calendarX, calendarY);
         }
     }
-
     tint(255);
 
 
@@ -696,6 +696,7 @@ function draw() {
     text("Legislative Agenda:", agendaX+pageStyleMargins, agendaY+pageStyleMargins)
     textSize(pageStyleTextSize);
     text(agendaText, agendaX+pageStyleMargins, agendaY+pageStyleMargins+pageStyleHeaderSpace, agendaWidth-(2*pageStyleMargins))
+
 
     //page position animation
     switch (pagePositionState) {
@@ -767,27 +768,16 @@ function draw() {
             }
             
             break;
+
     }
+
 
     //draw the page
     pageOverlayBuffer.clear();
     image(pageBuffer, pageX+pageAnimationOffsetX, pageY+pageAnimationOffsetY);
 
-    //draw page overlay
-    //debug word selection visulationzation
-    //let selectedLine = getHoveredLine();
-    //if (selectedLine != -1) {
-    //    let selectedWord = getHoveredWord(selectedLine);
-    //    if (selectedWord != -1) {
-    //        let lineBoundingBoxes = pageLines[selectedLine].get("boundingBoxes");
-    //        let bb = pageBoundingBoxes[lineBoundingBoxes[selectedWord]];
-    //        pageOverlayBuffer.noStroke();
-    //        pageOverlayBuffer.fill(0, 255, 0, 90);
-    //        pageOverlayBuffer.rect(bb.x, bb.y, bb.w, bb.h);
-    //    }
-    //}
 
-    //draw marks
+    //draw document overlay (marks)
     for (let i = 0; i < markedWords.length; i++) {
         let span = markedWords[i];
 
@@ -805,12 +795,11 @@ function draw() {
         pageOverlayBuffer.fill(255, 0, 0, 90);
         pageOverlayBuffer.rect(spanStart, bbStart.y, markedWordsProgress[i], bbStart.h);
     }
-
     image(pageOverlayBuffer, pageX+pageAnimationOffsetX, pageY+pageAnimationOffsetY);
 
-    //draw gui
+
+    //draw marker
     markerSeperation = lerp(markerSeperation, (activeTool == "marker")*50, 0.1);
     image(imgMarker, markerX-markerSeperation, markerY);
     image(imgMarkerLid, (markerX+219)+markerSeperation, markerY);
-
 }
