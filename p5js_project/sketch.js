@@ -176,7 +176,69 @@ function loadInfraction(index) {
 }
  
 function completeDocument() {
+
+    let markerCompliant = true;
+
     if (!pageIsInfraction) {
+        //check for marked word compliance
+        //this algo is probably very inefficent. I'm to sleepy to program something better
+        let totalScenarioMarked = 0
+        let totalScenarioUnmarked = 0
+        let errorUnmarked = 0
+        let errorMarked = 0
+        let currentPlayerMarkIndex = 0
+        let currentScenarioMarkIndex = 0
+        let scenarioMarked = documents[currentDocument].rules.toMark
+        for (let i = 0; i < pageBoundingBoxes.length; i++) {
+            let markedByPlayer = false;
+            if (!(currentPlayerMarkIndex >= markedWords.length)) {
+                if (i >= markedWords[currentPlayerMarkIndex][0] && i < markedWords[currentPlayerMarkIndex][1]) {
+                    markedByPlayer = true;
+                } else if (i == markedWords[currentPlayerMarkIndex][1]) {
+                    markedByPlayer = true;
+                    currentPlayerMarkIndex++;
+                }
+            }
+
+            let markedByScenario = false;
+            if (!(currentScenarioMarkIndex >= scenarioMarked.length)) {
+                if (i >= scenarioMarked[currentScenarioMarkIndex][0] && i < scenarioMarked[currentScenarioMarkIndex][1]) {
+                    markedByScenario = true;
+                } else if (i == scenarioMarked[currentScenarioMarkIndex][1]) {
+                    markedByScenario = true;
+                    currentScenarioMarkIndex++;
+                }
+            }
+
+            if (markedByScenario) {
+                totalScenarioMarked++;
+                if (!markedByPlayer) {
+                    errorUnmarked++;
+                }
+            } else {
+                totalScenarioUnmarked++;
+                if (markedByPlayer) {
+                    errorMarked++;
+                }
+            }
+        }
+
+        print("Marked: " + str(totalScenarioMarked) + ", " + str(totalScenarioMarked-errorUnmarked) + ", " + str((totalScenarioMarked-errorUnmarked)/totalScenarioMarked));
+        print("Unmarked: " + str(totalScenarioUnmarked) + ", " + str(totalScenarioUnmarked-errorMarked) + ", " + str((totalScenarioUnmarked-errorMarked)/totalScenarioUnmarked));
+
+        let unmarkedCorrectnessRatio = (totalScenarioUnmarked-errorMarked)/totalScenarioUnmarked;
+        //protect from a divide by zero
+        let markedCorrectnessRatio;
+        if (totalScenarioMarked > 0) {
+            markedCorrectnessRatio = (totalScenarioMarked-errorUnmarked)/totalScenarioMarked;
+        } else {
+            markedCorrectnessRatio = 1;
+        }
+
+        if (unmarkedCorrectnessRatio < 0.75 || markedCorrectnessRatio < 0.75) {
+            markerCompliant = false;
+        }
+
         time += documents[currentDocument].effects.timeElapsed;
         spending += documents[currentDocument].effects.moneySpent;
         if (documents[currentDocument].effects.doAgendaUpdate) {
@@ -185,11 +247,10 @@ function completeDocument() {
         currentDocument++;
     }
 
-    //check for marked word compliance
-    //TODO
+    //check for marked word compliance pt 2
 
     //check for send direction compliance
-    if (!sendDestination == ruleExitDirection) {
+    if ((!sendDestination == ruleExitDirection) || (!markerCompliant)) {
         loadInfraction(strikes);
         strikes++;
         return;

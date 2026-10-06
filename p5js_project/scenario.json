@@ -2,12 +2,12 @@
     "documents": [
         {
             "document": {
-                "header": "not implemented",
-                "footer": "also not implemented",
-                "body": "blah blah blah blah, oh no, better cross this out, blah blah, blah, this too, blah blahblah."
+                "header": "Welcome to Your New Job.",
+                "footer": "to: You,   from: the Legislature",
+                "body": "Tutorialization text! oh wow, oh boy."
             },
             "rules": {
-                "toMark": [[4, 9], [13, 14]],
+                "toMark": [],
                 "directionEnter": 2,
                 "directionExit": 1,
                 "canSend": true,
@@ -23,14 +23,14 @@
 
         {
             "document": {
-                "header": "not implemented",
-                "footer": "also not implemented",
-                "body": "This is the second Document!! Oh boy! How excited you mumst be."
+                "header": "Proposal",
+                "footer": "to: You,   from: The Transit Board",
+                "body": "Good morning. We have a new proposal for a rapid transit system. 1. it goes fast. 2. we do not follow the agenda (:< 3. automated trains. 4. we super don't follow the agenda!!! (:<"
             },
             "rules": {
-                "toMark": [],
-                "directionEnter": 2,
-                "directionExit": 1,
+                "toMark": [[17, 23], [28, 34]],
+                "directionEnter": 0,
+                "directionExit": 0,
                 "canSend": true,
                 "canMark": true
             },
