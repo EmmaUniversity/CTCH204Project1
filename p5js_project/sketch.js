@@ -67,6 +67,12 @@ let tallyY = 10;
 let tallyWidth = 90;
 let tallyHeight = 285;
 
+let agendaX = 335;
+let agendaY = 305;
+let agendaWidth = 255;
+let agendaHeight = 285;
+let agendaText = "";
+
 //game variables
 let activeTool = "hand";
 //one of:
@@ -173,6 +179,9 @@ function completeDocument() {
     if (!pageIsInfraction) {
         time += documents[currentDocument].effects.timeElapsed;
         spending += documents[currentDocument].effects.moneySpent;
+        if (documents[currentDocument].effects.doAgendaUpdate) {
+            agendaText = documents[currentDocument].effects.agenda;
+        }
         currentDocument++;
     }
 
@@ -500,8 +509,6 @@ function tick() {
         }
     }
 
-
-
     //update calendar pages
     for (let i = 0; i < calendarPages.length; i++) {
         let calendarPage = calendarPages[i];
@@ -571,7 +578,7 @@ function draw() {
         let angle = calendarPage.get("angle");
         if (angle > (PI/2)) {
             //evil math
-            // for whatever reason, sin(PI) = 1.2, so you need to add a tiny amount so it doesn't screw up
+            // for whatever reason, sin(PI) = 1.2e, so you need to add a tiny amount so it doesn't screw up
             let yOffset = calendarCenterOffset-(sin(max(0, (angle+0.000001)-(PI/2)))*calendarCenterOffset);
             let height = calendarPageHeight*abs(cos(angle+0.000001));
 
@@ -604,7 +611,7 @@ function draw() {
     tint(255);
 
 
-    //draw tallys
+    //draw tally
     noStroke();
     fill(245);
     rect(tallyX, tallyY, tallyWidth, tallyHeight);
@@ -617,6 +624,17 @@ function draw() {
     text(dollarsToString(spending), tallyX+(tallyWidth/2), 160);
     text("transit\nbuilt", tallyX+(tallyWidth/2), 210);
     text("0 km", tallyX+(tallyWidth/2), 250);
+
+
+    //draw agenda
+    fill(245);
+    rect(agendaX, agendaY, agendaWidth, agendaHeight);
+    fill(0);
+    textAlign(LEFT, TOP);
+    textSize(pageStyleHeaderSize);
+    text("Legislative Agenda:", agendaX+pageStyleMargins, agendaY+pageStyleMargins)
+    textSize(pageStyleTextSize);
+    text(agendaText, agendaX+pageStyleMargins, agendaY+pageStyleMargins+pageStyleHeaderSpace, agendaWidth-(2*pageStyleMargins))
 
     //page position animation
     switch (pagePositionState) {
