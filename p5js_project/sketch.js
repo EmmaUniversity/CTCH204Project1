@@ -26,6 +26,8 @@ let pagePositionState = "entering"
 
 let pageCanSend = false;
 let pageCanMark = false;
+let pageIsInfraction = false;
+
 let pageBoundingBoxes;
 let pageLines;
 let markedWords = [[8, 12], [13, 15], [30, 30]]; //example
@@ -64,6 +66,8 @@ let sendDistance = 0;
 //scenario
 let scenario;
 let documents;
+let infractionKeys = ["infraction1", "infraction2", "infraction3"];
+
 let currentDocument = 0;
 let strikes = 0;
 
@@ -92,9 +96,11 @@ async function setup() {
 
 function loadDocument(index) {
     let positionEnter = pageDestinations.get(documents[index].rules.directionEnter);
-    pageAnimationOffsetX = positionEnter.x
-    pageAnimationOffsetY = positionEnter.y
-    
+    pageAnimationOffsetX = positionEnter.x;
+    pageAnimationOffsetY = positionEnter.y;
+    pagePositionState = "entering";
+    pageIsInfraction = false;
+
     ruleExitDirection = documents[index].rules.directionExit;
     ruleToMark = documents[index].rules.toMark;
     pageCanSend = documents[index].rules.canSend;
@@ -105,16 +111,37 @@ function loadDocument(index) {
 
 //TODO: fix code duplication between this and load document
 function loadInfraction(index) {
+    let infaction = scenario.specialDocuments[infractionKeys[index]]
 
+    let positionEnter = pageDestinations.get(infaction.rules.directionEnter);
+    pageAnimationOffsetX = positionEnter.x;
+    pageAnimationOffsetY = positionEnter.y;
+    pagePositionState = "entering";
+    pageIsInfraction = true;
+
+    ruleExitDirection = infaction.rules.directionExit;
+    ruleToMark = infaction.rules.toMark;
+    pageCanSend = infaction.rules.canSend;
+    pageCanMark = infaction.rules.canMark;
+
+    updatePage(infaction.document.body);
 }
  
 function completeDocument() {
-    currentDocument++;
+    if (!pageIsInfraction) {
+        currentDocument++;
+    }
     
     //check for marked word compliance
 
     //check for send direction compliance
-    
+    if (!sendDestination == ruleExitDirection) {
+        console.log(sendDestination);
+        loadInfraction(strikes);
+        strikes++;
+        return;
+    }
+
     loadDocument(currentDocument);
 }
 
@@ -360,7 +387,6 @@ function tick() {
                 sendDocument(sendDestination);
             }
 
-            sendDestination = -1;
             sendDistance = 0;
             sendStartX = -1;
             sendStartY = -1;
@@ -419,10 +445,9 @@ function draw() {
             pageAnimationOffsetX = lerp(pageAnimationOffsetX, pageDestinationX, 0.1);
             pageAnimationOffsetY = lerp(pageAnimationOffsetY, pageDestinationY, 0.1);
 
-            if ((abs(pageAnimationOffsetX) < 2) && (abs(pageAnimationOffsetY) < 2)) {
-                pageAnimationOffsetX = 0;
-                pageAnimationOffsetY = 0;
-                pagePositionState = "offscreen"
+            if ((abs(pageAnimationOffsetX-pageDestinationX) < 8) && (abs(pageAnimationOffsetY-pageDestinationY) < 8)) {
+                pagePositionState = "offscreen";
+                completeDocument();
             }
 
             break;
