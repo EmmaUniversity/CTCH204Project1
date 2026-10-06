@@ -1,6 +1,10 @@
 //assets
 let imgMarker;
 let imgMarkerLid;
+let imgCalendarPageBack;
+let imgCalendarPageFront;
+let imgCalendarRings;
+let imgCalendarCrosses = [];
 
 //page variables
 let pageBuffer;
@@ -43,9 +47,17 @@ let pageAnimationOffsetRotation = 0; //not currently implemented because I can't
 let pageDestinations = new Map();
 
 //gui
-let markerX = 360;
-let markerY = 300;
+let markerX = 0;
+let markerY = 480;
 let markerSeperation = 0;
+
+let calendarX = 335;
+let calendarY = 10;
+let calendarPageWidth = 155;
+let calendarPageHeight = 143;
+let calendarPages = [];
+let calendarMonths = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+let calendarCenterOffset = 143;
 
 //game variables
 let activeTool = "hand";
@@ -70,6 +82,7 @@ let infractionKeys = ["infraction1", "infraction2", "infraction3"];
 
 let currentDocument = 0;
 let strikes = 0;
+let time = 0;
 
 let ruleExitDirection = 0;
 let ruleToMark;
@@ -83,6 +96,20 @@ async function setup() {
     //load images
     imgMarker = await loadImage("p5js_project/assets/marker.png");
     imgMarkerLid = await loadImage("p5js_project/assets/marker_lid.png");
+    imgCalendarPageFront = await loadImage("p5js_project/assets/calendar_page_front.png");
+    imgCalendarPageBack = await loadImage("p5js_project/assets/calendar_page_back.png");
+    imgCalendarRings = await loadImage("p5js_project/assets/calendar_rings.png")
+    imgCalendarCrosses.push(
+        await loadImage("p5js_project/assets/calendar_cross_0.png"),
+        await loadImage("p5js_project/assets/calendar_cross_1.png"),
+        await loadImage("p5js_project/assets/calendar_cross_2.png"),
+        await loadImage("p5js_project/assets/calendar_cross_3.png"),
+        await loadImage("p5js_project/assets/calendar_cross_4.png"),
+        await loadImage("p5js_project/assets/calendar_cross_5.png"),
+        await loadImage("p5js_project/assets/calendar_cross_6.png"),
+        await loadImage("p5js_project/assets/calendar_cross_7.png"),
+        await loadImage("p5js_project/assets/calendar_cross_8.png")
+    )
 
     pageDestinations.set(0, createVector(0, 650)); //down
     pageDestinations.set(1, createVector(650, 0)); //right
@@ -92,6 +119,10 @@ async function setup() {
     scenario = await loadJSON("p5js_project/scenario.json");
     documents = scenario.documents;
     loadDocument(0);
+
+    //calendar setup
+    addPage(-1, PI);
+    addPage(0);
 }
 
 function loadDocument(index) {
@@ -136,7 +167,6 @@ function completeDocument() {
 
     //check for send direction compliance
     if (!sendDestination == ruleExitDirection) {
-        console.log(sendDestination);
         loadInfraction(strikes);
         strikes++;
         return;
@@ -149,6 +179,17 @@ function completeInfraction() {
     loadDocument(currentDocument);
 }
 
+function addPage(offset, angle=0) {
+    let calendarPage = new Map();
+    calendarPage.set("buffer", createGraphics(calendarPageWidth, calendarPageHeight));
+    calendarPage.get("buffer").image(imgCalendarPageFront, 0, 0)
+    calendarPage.set("angle", angle);
+    calendarPage.set("flipped", false);
+    calendarPage.set("flipping", false);
+    calendarPage.set("offset", offset);
+    calendarPage.set("marks", 0);
+    calendarPages.push(calendarPage);
+}
 
 function updatePage(contents) {
     pageBoundingBoxes = [];
@@ -311,7 +352,6 @@ function mousePressed(event) {
                 }
 
                 //selected starting word is good
-                console.log(selectedWordBoundingBoxIndex);
                 markedWords.push([selectedWordBoundingBoxIndex, selectedWordBoundingBoxIndex])
                 markedWordsProgress.push(0);
                 markedWordsGoal.push(0);
@@ -410,22 +450,107 @@ function tick() {
         }
     }
 
+
+
+    //update calendar pages
+    for (let i = 0; i < calendarPages.length; i++) {
+        let calendarPage = calendarPages[i];
+        let buffer = calendarPage.get("buffer");
+
+        //update angle
+        if (calendarPage.get("flipping")) {
+            calendarPage.set("angle", min(calendarPage.get("angle")+0.1, PI));
+            if (calendarPage.get("angle") >= PI) {
+                calendarPage.set("flipping", false);
+            }
+        }
+
+        //update buffer
+        if (!calendarPage.get("flipped")) {
+            let offset = calendarPage.get("offset");
+            let marksCurrent = calendarPage.get("marks");
+            
+            let relativeTime = time-(30*offset);
+
+            if ((relativeTime > 30) && (calendarPage.get("flipping") == false) && (calendarPage.get("angle") < PI/2) && (marksCurrent >= 30)) {
+                calendarPage.set("flipping", true);
+                addPage(offset+1);
+            }
+
+            relativeTime = min(relativeTime, 30);
+            if (relativeTime > marksCurrent) {
+                buffer.image(random(imgCalendarCrosses), 20+((marksCurrent%6)*19), 30+(floor(marksCurrent/6)*19));
+                marksCurrent += 1;
+                calendarPage.set("marks", marksCurrent);
+            }
+
+            if (calendarPage.get("angle") > PI/2) {
+                calendarPage.set("flipped", true);
+                buffer.clear();
+                buffer.image(imgCalendarPageBack, 0, 0);
+                buffer.textAlign(CENTER, CENTER);
+                buffer.textSize(50);
+                buffer.noStroke();
+                buffer.fill(255, 0, 0);
+                buffer.text(calendarMonths[(offset+1)%calendarMonths.length], 77, 67);
+            }
+        }
+    }
+
+    //remove redundant pages
+    let calendarPageSecond = calendarPages[1];
+    if (calendarPageSecond.get("angle") == PI) {
+        calendarPages.shift();
+    }
+
 }
 
 
 
 function draw() {
     //execute game logic before drawing the frame
-    tick()
+    tick();
 
     background(220);
-    
-    //let pagePositionState = "entering"
-    //one of:
-    // entering
-    // exiting
-    // interactable
-    // offScreen
+
+    //draw pages
+    //top pages
+    for (let i = 0; i < calendarPages.length; i++) {
+        let calendarPage = calendarPages[i];
+        let buffer = calendarPage.get("buffer");
+        let angle = calendarPage.get("angle");
+        if (angle > (PI/2)) {
+            //evil math
+            // for whatever reason, sin(PI) = 1.2, so you need to add a tiny amount so it doesn't screw up
+            let yOffset = calendarCenterOffset-(sin(max(0, (angle+0.000001)-(PI/2)))*calendarCenterOffset);
+            let height = calendarPageHeight*abs(cos(angle+0.000001));
+
+            tint(255+((abs(cos(angle))-1)*128))
+            image(buffer, calendarX, calendarY+yOffset, imgCalendarPageFront.width, height)
+        }
+    }
+
+    //bottom pages, have to itterate through backwards for draw order reasons
+    for (let i = calendarPages.length-1; i >= 0; i--) {
+        let calendarPage = calendarPages[i];
+        let buffer = calendarPage.get("buffer");
+        let angle = calendarPage.get("angle");
+        if (angle < (PI/2)) {
+            //evil math
+            // for whatever reason, sin(PI) = 1.2, so you need to add a tiny amount so it doesn't screw up
+            let yOffset = calendarCenterOffset-(sin(max(0, (angle+0.000001)-(PI/2)))*calendarCenterOffset);
+            let height = calendarPageHeight*abs(cos(angle+0.000001));
+
+            tint(255+((abs(cos(angle))-1)*128))
+            image(buffer, calendarX, calendarY+yOffset, imgCalendarPageFront.width, height)
+        }
+        if (i == calendarPages.length-1) {
+            image(imgCalendarRings, calendarX, calendarY);
+        }
+    }
+
+    tint(255)
+
 
     //page position animation
     switch (pagePositionState) {
@@ -540,7 +665,7 @@ function draw() {
 
     //draw gui
     markerSeperation = lerp(markerSeperation, (activeTool == "marker")*50, 0.1);
-    image(imgMarker, markerX, markerY+markerSeperation);
-    image(imgMarkerLid, markerX, markerY-markerSeperation);
+    image(imgMarker, markerX-markerSeperation, markerY);
+    image(imgMarkerLid, (markerX+219)+markerSeperation, markerY);
 
 }
