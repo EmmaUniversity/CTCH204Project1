@@ -32,15 +32,17 @@ let pagePositionState = "entering"
 // interactable
 // offScreen
 
-let pageCanSend = false;
-let pageCanMark = false;
-let pageIsInfraction = false;
+let isPageSendable = false; //if false, the game has reached a end state
+let isPageMarkable = false;
+let isPageInfraction = false;
 
 let pageBoundingBoxes;
 let pageLines;
-let markedWords = [[8, 12], [13, 15], [30, 30]]; //example
-let markedWordsProgress = [0, 0, 0]; //example
-let markedWordsGoal = [0, 0, 0]; //example
+let markedWords = [[8, 12], [13, 15], [30, 30]]; //contains size two arrays where both values are indicies into the words array, and they define a span starting at the first value and ending at the second
+
+//marker animation
+let markedWordsProgress = [];
+let markedWordsGoal = [];
 
 //page animation
 let pageDestinationX = 0;
@@ -49,7 +51,6 @@ let pageAnimationOffsetX = 0;
 let pageAnimationOffsetY = -650;
 let pageAnimationOffsetRotation = 0; //not currently implemented because I can't find a good way to rotate images without webGL :/
 let pageDestinations = new Map();
-
 
 //gui
 let markerX = 0;
@@ -60,9 +61,9 @@ let calendarX = 335;
 let calendarY = 10;
 let calendarPageWidth = 155;
 let calendarPageHeight = 143;
-let calendarPages = [];
-let calendarMonths = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
-let calendarCenterOffset = 143;
+let calendarPages = []; //array of maps, see addCalendarPage() for keys/values
+let calendarMonths = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+let calendarCenterOffset = 143; //the y coordinate of the center line between the top and bottom page
 
 let tallyX = 500;
 let tallyY = 10;
@@ -82,10 +83,12 @@ let activeTool = "hand";
 // marker
 // hand
 
+//marking
 let isMarking = false;
 let markingLine = -1; //index into pageLines array
 let markingIndex = -1; //index into markedWords array
 
+//sending document away
 let isSending = false;
 let sendStartX = -1;
 let sendStartY = -1;
@@ -96,7 +99,7 @@ let sendDistance = 0;
 //scenario
 let scenario;
 let documents;
-let infractionKeys = ["infraction1", "infraction2", "infraction3"];
+let infractionKeys = ["infraction1", "infraction2", "infraction3"]; //index infractions number into the specialDocuments table in the scenario
 
 let currentDocument = 0;
 
@@ -104,9 +107,12 @@ let strikes = 0;
 let time = 0;
 let spending = 0;
 
-let ruleExitDirection = 0;
-let ruleToMark;
+let ruleExitDirection = 0; //index into pageDestinations
+let ruleToMark; //same format of markedWords, contains the correct set of spans for what should be marked
 
+
+
+// -<>- SETUP -<>-
 
 async function setup() {
     createCanvas(600, 600);
@@ -132,6 +138,7 @@ async function setup() {
         await loadImage("p5js_project/assets/calendar_cross_8.png")
     )
 
+    //set up page desstinations
     pageDestinations.set(0, createVector(0, 650)); //down
     pageDestinations.set(1, createVector(650, 0)); //right
     pageDestinations.set(2, createVector(0, -650)); //up
@@ -149,45 +156,58 @@ async function setup() {
 
 
 // -<>- SCENARIO -<>-
-
+//load a document from the scenario
 function loadDocument(index) {
+    //entering animation
     let positionEnter = pageDestinations.get(documents[index].rules.directionEnter);
     pageAnimationOffsetX = positionEnter.x;
     pageAnimationOffsetY = positionEnter.y;
+    
+    //state
     pagePositionState = "entering";
-    pageIsInfraction = false;
+    isPageInfraction = false;
 
+    //rules
     ruleExitDirection = documents[index].rules.directionExit;
     ruleToMark = documents[index].rules.toMark;
-    pageCanSend = documents[index].rules.canSend;
-    pageCanMark = documents[index].rules.canMark;
+    isPageSendable = documents[index].rules.canSend;
+    isPageMarkable = documents[index].rules.canMark;
 
+    //update page variables and draw page
     updatePage(documents[index].document.body, documents[index].document.header, documents[index].document.footer);
 }
 
 //TODO: fix code duplication between this and load document
+//load an infraction document from the scenario
 function loadInfraction(index) {
     let infaction = scenario.specialDocuments[infractionKeys[index]]
 
+    //entering animation
     let positionEnter = pageDestinations.get(infaction.rules.directionEnter);
     pageAnimationOffsetX = positionEnter.x;
     pageAnimationOffsetY = positionEnter.y;
+    
+    //state
     pagePositionState = "entering";
-    pageIsInfraction = true;
+    isPageInfraction = true;
 
+    //rules
     ruleExitDirection = infaction.rules.directionExit;
     ruleToMark = infaction.rules.toMark;
-    pageCanSend = infaction.rules.canSend;
-    pageCanMark = infaction.rules.canMark;
+    isPageSendable = infaction.rules.canSend;
+    isPageMarkable = infaction.rules.canMark;
 
+    //update page variables and draw page
     updatePage(infaction.document.body, infaction.document.header, infaction.document.footer);
 }
  
+//run when a document has been sent to check wehter the player followed the rules,
+//and to load the next document or infraction
 function completeDocument() {
 
+    //check if the player marked the right words
     let markerCompliant = true;
-
-    if (!pageIsInfraction) {
+    if (!isPageInfraction) {
         //check for marked word compliance
         //this algo is probably very inefficent. I'm to sleepy to program something better
         let totalScenarioMarked = 0
@@ -252,36 +272,45 @@ function completeDocument() {
         if (documents[currentDocument].effects.doAgendaUpdate) {
             agendaText = documents[currentDocument].effects.agenda;
         }
+
+        //only increment the document index if current page is not an infraction so as not to skip documents
         currentDocument++;
     }
 
-    //check for marked word compliance pt 2
-
-    //check for send direction compliance
+    //check if the player sent the document in the right direction
+    //and check if the marks words compliance check passed
     if ((!sendDestination == ruleExitDirection) || (!markerCompliant)) {
         loadInfraction(strikes);
         strikes++;
-        return;
+        return; //do not load next document
     }
 
+    //load next document
     loadDocument(currentDocument);
 }
 
 //add a calendarPage
 function addCalendarPage(offset, angle=0) {
+    //create page, buffer, and draw page image to buffer
     let calendarPage = new Map();
     calendarPage.set("buffer", createGraphics(calendarPageWidth, calendarPageHeight));
-    calendarPage.get("buffer").image(imgCalendarPageFront, 0, 0)
+    calendarPage.get("buffer").image(imgCalendarPageFront, 0, 0);
+    
+    //offset from starting time of the game in months
+    calendarPage.set("offset", offset);
+
+    //animation
     calendarPage.set("angle", angle);
     calendarPage.set("flipped", false);
     calendarPage.set("flipping", false);
-    calendarPage.set("offset", offset);
     calendarPage.set("marks", 0);
+    
     calendarPages.push(calendarPage);
 }
 
-//update the document page
+//redraws page buffer, and resets associated marking related marking variables/arrays
 function updatePage(contents, header, footer) {
+    //reset page variables
     pageBoundingBoxes = [];
     pageLines = [];
     markedWords = [];
@@ -289,12 +318,12 @@ function updatePage(contents, header, footer) {
     markedWordsGoal = [];
     pageBuffer.background(245);
     
-    //header
+    //draw header
     pageBuffer.textAlign(LEFT, TOP);
     pageBuffer.textSize(pageStyleHeaderSize);
     pageBuffer.text(header, pageStyleMargins, pageStyleMargins);
 
-    //footer
+    //draw footer
     pageBuffer.textAlign(LEFT, BOTTOM);
     pageBuffer.textSize(pageStyleFotterSize);
     pageBuffer.text(footer, pageStyleMargins, pageHeight-pageStyleMargins);
@@ -316,6 +345,7 @@ function updatePage(contents, header, footer) {
     currentBoundingBoxLine.set("boundingBoxes", []);
     pageLines.push(currentBoundingBoxLine);
 
+    //draw body text
     for (let i = 0; i < words.length; i++) {
         //space needs to come before word because the textBounds function does not consider trailing spaces
         let word = " "+words[i];
@@ -363,6 +393,7 @@ function updatePage(contents, header, footer) {
 
 // -<>- HELPER FUNCTIONS -<>-
 
+//returns index into pageLines array that matches mouse y
 function getHoveredLine() {
     if ((mouseX >= pageX && mouseX < pageX+pageWidth) && (mouseY >= pageY && mouseY < pageY+pageHeight)) {
         let hoveredLine = -1;
@@ -398,6 +429,7 @@ function getHoveredWord(lineIndex) {
     return selectedWordBoundingBox;
 }
 
+//convert an int into a compacted string representaiton of the dollar amount
 function dollarsToString(number) {
     if (number < 10000) {
         return str(floor(number))
@@ -414,6 +446,7 @@ function dollarsToString(number) {
     }
 }
 
+//convert an into into a string showing the years and days
 function timeToString(number) {
     if (number < 360) {
         return str(number) + " days"
@@ -432,7 +465,7 @@ function mousePressed(event) {
         //page interactions
         switch(activeTool) {
             case "marker":
-                if (!pageCanMark) {
+                if (!isPageMarkable) {
                     break;
                 } 
 
@@ -476,7 +509,7 @@ function mousePressed(event) {
                 break;
             
             case "hand":
-                if (!pageCanSend) {
+                if (!isPageSendable) {
                     break;
                 }    
 
@@ -625,6 +658,9 @@ function tick() {
 
 }
 
+
+
+// -<>- DRAW -<>-
 
 function draw() {
     //execute game logic before drawing the frame
