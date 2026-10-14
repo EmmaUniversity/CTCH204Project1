@@ -17,11 +17,11 @@ let pageX = 10;
 let pageY = 10;
 
 //page styling
-let pageStyleLineSpacing = 18;
+let pageStyleLineSpacing = 15;
 let pageStyleHeaderSpace = 33
-let pageStyleTextSize = 15;
-let pageStyleHeaderSize = 25;
-let pageStyleFotterSize = 15;
+let pageStyleTextSize = 12;
+let pageStyleHeaderSize = 20;
+let pageStyleFotterSize = 12;
 let pageStyleMargins = 10;
 
 //page interaction
@@ -205,87 +205,97 @@ function loadInfraction(index) {
 //and to load the next document or infraction
 function completeDocument() {
 
+    //entire punishment logic is commented out because the logic to check whether or not the player highlighted
+    //the correction sections has a game breaking bug that I could not find ot fix within the limited time I have left to finish
+    //hopefully I've remembered to write my reasons for why I don't think this is as bad as it seems in my reflection
+
+    //TODO: fix and reimplement
     //check if the player marked the right words
-    let markerCompliant = true;
-    if (!isPageInfraction) {
-        //check for marked word compliance
-        //this algo is probably very inefficent. I'm to sleepy to program something better
-        let totalScenarioMarked = 0
-        let totalScenarioUnmarked = 0
-        let errorUnmarked = 0
-        let errorMarked = 0
-        let currentPlayerMarkIndex = 0
-        let currentScenarioMarkIndex = 0
-        let scenarioMarked = documents[currentDocument].rules.toMark
-        for (let i = 0; i < pageBoundingBoxes.length; i++) {
-            let markedByPlayer = false;
-            if (!(currentPlayerMarkIndex >= markedWords.length)) {
-                if (i >= markedWords[currentPlayerMarkIndex][0] && i < markedWords[currentPlayerMarkIndex][1]) {
-                    markedByPlayer = true;
-                } else if (i == markedWords[currentPlayerMarkIndex][1]) {
-                    markedByPlayer = true;
-                    currentPlayerMarkIndex++;
-                }
-            }
-
-            let markedByScenario = false;
-            if (!(currentScenarioMarkIndex >= scenarioMarked.length)) {
-                if (i >= scenarioMarked[currentScenarioMarkIndex][0] && i < scenarioMarked[currentScenarioMarkIndex][1]) {
-                    markedByScenario = true;
-                } else if (i == scenarioMarked[currentScenarioMarkIndex][1]) {
-                    markedByScenario = true;
-                    currentScenarioMarkIndex++;
-                }
-            }
-
-            if (markedByScenario) {
-                totalScenarioMarked++;
-                if (!markedByPlayer) {
-                    errorUnmarked++;
-                }
-            } else {
-                totalScenarioUnmarked++;
-                if (markedByPlayer) {
-                    errorMarked++;
-                }
-            }
-        }
-
-        print("Marked: " + str(totalScenarioMarked) + ", " + str(totalScenarioMarked-errorUnmarked) + ", " + str((totalScenarioMarked-errorUnmarked)/totalScenarioMarked));
-        print("Unmarked: " + str(totalScenarioUnmarked) + ", " + str(totalScenarioUnmarked-errorMarked) + ", " + str((totalScenarioUnmarked-errorMarked)/totalScenarioUnmarked));
-
-        let unmarkedCorrectnessRatio = (totalScenarioUnmarked-errorMarked)/totalScenarioUnmarked;
-        //protect from a divide by zero
-        let markedCorrectnessRatio;
-        if (totalScenarioMarked > 0) {
-            markedCorrectnessRatio = (totalScenarioMarked-errorUnmarked)/totalScenarioMarked;
-        } else {
-            markedCorrectnessRatio = 1;
-        }
-
-        if (unmarkedCorrectnessRatio < 0.75 || markedCorrectnessRatio < 0.75) {
-            markerCompliant = false;
-        }
-
-        time += documents[currentDocument].effects.timeElapsed;
-        spending += documents[currentDocument].effects.moneySpent;
-        if (documents[currentDocument].effects.doAgendaUpdate) {
-            agendaText = documents[currentDocument].effects.agenda;
-        }
-
-        //only increment the document index if current page is not an infraction so as not to skip documents
-        currentDocument++;
-    }
-
-    //check if the player sent the document in the right direction
-    //and check if the marks words compliance check passed
-    if ((!sendDestination == ruleExitDirection) || (!markerCompliant)) {
-        loadInfraction(strikes);
-        strikes++;
-        return; //do not load next document
-    }
+    //let markerCompliant = true;
+    //if (!isPageInfraction) {
+    //    //check for marked word compliance
+    //    //this algo is probably very inefficent. I'm to sleepy to program something better
+    //    let totalScenarioMarked = 0
+    //    let totalScenarioUnmarked = 0
+    //    let errorUnmarked = 0
+    //    let errorMarked = 0
+    //    let currentPlayerMarkIndex = 0
+    //    let currentScenarioMarkIndex = 0
+    //    let scenarioMarked = documents[currentDocument].rules.toMark
+    //    for (let i = 0; i < pageBoundingBoxes.length; i++) {
+    //        let markedByPlayer = false;
+    //        if (!(currentPlayerMarkIndex >= markedWords.length)) {
+    //            if (i >= markedWords[currentPlayerMarkIndex][0] && i < markedWords[currentPlayerMarkIndex][1]) {
+    //                markedByPlayer = true;
+    //            } else if (i == markedWords[currentPlayerMarkIndex][1]) {
+    //                markedByPlayer = true;
+    //                currentPlayerMarkIndex++;
+    //            }
+    //        }
+    //
+    //        let markedByScenario = false;
+    //        if (!(currentScenarioMarkIndex >= scenarioMarked.length)) {
+    //            if (i >= scenarioMarked[currentScenarioMarkIndex][0] && i < scenarioMarked[currentScenarioMarkIndex][1]) {
+    //                markedByScenario = true;
+    //            } else if (i == scenarioMarked[currentScenarioMarkIndex][1]) {
+    //                markedByScenario = true;
+    //                currentScenarioMarkIndex++;
+    //            }
+    //        }
+    //
+    //        if (markedByScenario) {
+    //            totalScenarioMarked++;
+    //            if (!markedByPlayer) {
+    //                errorUnmarked++;
+    //            }
+    //        } else {
+    //            totalScenarioUnmarked++;
+    //            if (markedByPlayer) {
+    //                errorMarked++;
+    //            }
+    //        }
+    //    }
+    //
+    //    print("Marked: " + str(totalScenarioMarked) + ", " + str(totalScenarioMarked-errorUnmarked) + ", " + str((totalScenarioMarked-errorUnmarked)/totalScenarioMarked));
+    //    print("Unmarked: " + str(totalScenarioUnmarked) + ", " + str(totalScenarioUnmarked-errorMarked) + ", " + str((totalScenarioUnmarked-errorMarked)/totalScenarioUnmarked));
+    //    print(scenarioMarked)
+    //    print(markedWords)
+    //
+    //    let unmarkedCorrectnessRatio = (totalScenarioUnmarked-errorMarked)/totalScenarioUnmarked;
+    //    //protect from a divide by zero
+    //    let markedCorrectnessRatio;
+    //    if (totalScenarioMarked > 0) {
+    //        markedCorrectnessRatio = (totalScenarioMarked-errorUnmarked)/totalScenarioMarked;
+    //    } else {
+    //        markedCorrectnessRatio = 1;
+    //    }
+    //
+    //    if (unmarkedCorrectnessRatio < 0.75 || markedCorrectnessRatio < 0.75) {
+    //        markerCompliant = false;
+    //    }
+    //
+    //    time += documents[currentDocument].effects.timeElapsed;
+    //    spending += documents[currentDocument].effects.moneySpent;
+    //    if (documents[currentDocument].effects.doAgendaUpdate) {
+    //        agendaText = documents[currentDocument].effects.agenda;
+    //    }
+    //
+    //    //only increment the document index if current page is not an infraction so as not to skip documents
+    //    currentDocument++;
+    //}
+    //
+    ////check if the player sent the document in the right direction
+    ////and check if the marks words compliance check passed
+    //if ((!sendDestination == ruleExitDirection) || (!markerCompliant)) {
+    //    loadInfraction(strikes);
+    //    strikes++;
+    //    return; //do not load next document
+    //}
 
     //load next document
+    currentDocument++                                            //Remove when reimplementing the punishment logic
+    time += documents[currentDocument].effects.timeElapsed;      //Remove when reimplementing the punishment logic
+    spending += documents[currentDocument].effects.moneySpent;   //Remove when reimplementing the punishment logic
     loadDocument(currentDocument);
 }
 
@@ -576,8 +586,8 @@ function tick() {
         //released paper
         if (!mouseIsPressed) {
             if (sendDistance > 64 && sendDestination != -1) {
-                pageDestinationX = pageDestinations.get(destination).x;
-                pageDestinationY = pageDestinations.get(destination).y;
+                pageDestinationX = pageDestinations.get(sendDestination).x;
+                pageDestinationY = pageDestinations.get(sendDestination).y;
                 pagePositionState = "exiting";
             }
 

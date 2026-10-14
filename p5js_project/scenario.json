@@ -2,9 +2,9 @@
     "documents": [
         {
             "document": {
-                "header": "Welcome to Your New Job.",
-                "footer": "to: You,   from: the Legislature",
-                "body": "Tutorialization text! oh wow, oh boy."
+                "header": "Triangle Coalition Wins Election",
+                "footer": "Column: James Asper",
+                "body": "After a tumultuous race, the elections closed on Saturday revealing a landslide victory for the Triangle Coalition. While this coalition is not completely united, one policy is common between them: Building a new subway line and finally bringing relief to our overcrowded system and extending transit access to many new parts of the city. While promises like these have been made and broken before, we can only hope that this time will be different."
             },
             "rules": {
                 "toMark": [],
@@ -16,37 +16,208 @@
             "effects": {
                 "timeElapsed": 1,
                 "moneySpent": 0,
-                "doAgendaUpdate": true,
-                "agenda": " - infroce the agenda :)"
+                "doAgendaUpdate": false
             }
         },
-
         {
             "document": {
-                "header": "Proposal",
-                "footer": "to: You,   from: The Transit Board",
-                "body": "Good morning. We have a new proposal for a rapid transit system. 1. it goes fast. 2. we do not follow the agenda (:< 3. automated trains. 4. we super don't follow the agenda!!! (:<"
+                "header": "Welcome to the Job",
+                "footer": "To: You From: The Legislature",
+                "body": "After many rounds of careful screening, you have been selected as the legislature's new transit policy intern. How excited you must be! Your new job is to be the eyes and angry red highlighter of council. You will you be enforcing our policy by reviewing documents from the transit agency, highlighting areas that conflict with our policy and sending the documents back for revision. Click and hold on this document, swipe right, and release to keep it for yourself and view the next document."
             },
             "rules": {
-                "toMark": [[17, 23], [28, 34]],
+                "toMark": [],
+                "directionEnter": 2,
+                "directionExit": 1,
+                "canSend": true,
+                "canMark": true
+            },
+            "effects": {
+                "timeElapsed": 0,
+                "moneySpent": 0,
+                "doAgendaUpdate": true,
+                "agenda": "As a test to make sure you are paying attention: Mark all instances of the word document."
+            }
+        },
+        {
+            "document": {
+                "header": "Your Duties",
+                "footer": "To: You From: The Legislature",
+                "body": "As our transit policy intern, you have two duties regarding the documents you receive. First, you must  highlight any areas in the document which conflict with our policy objectives. You can do this by clicking on the marker to uncap it, then click and drag your cursor across the block of text you wish to highlight. The rules about what you have to highlight will be displayed on a memo on the bottom right of your desk. Secondly, after you have marked what you need in a document, you must send the document to it's appropriate destination. You can do this by clicking again on the marker to cap it, and clicking and dragging from anywhere on the page. If you drag right and release, you will keep the document for yourself. Up, and the document will be sent back to the legislature. Down, and the document will go to the transit agency. Pay attention to the footer. If a document is from the legislature, you must keep it. If it is from the transit agency, send it to us if it is mistake free, send it back to them for revisions if it contains mistakes. To check that you are paying attention, mark this document correctly and send it back to us."
+            },
+            "rules": {
+                "toMark": [[11, 11], [22, 22], [92, 92], [129, 129], [135, 135], [146, 146], [160, 160], [205, 205]],
+                "directionEnter": 2,
+                "directionExit": 1,
+                "canSend": true,
+                "canMark": true
+            },
+            "effects": {
+                "timeElapsed": 0,
+                "moneySpent": 0,
+                "doAgendaUpdate": false
+            }
+        },
+        {
+            "document": {
+                "header": "First Task",
+                "footer": "To: You From: The Legislature",
+                "body": "The next documents you review are going to be initial proposals for the route and technology to be used for the new line. Our requires are: stops in Northville, Industy Park, The Quay, and Bumbleton; the total price must come in at less than ten billion dollars; the line must achieve an average speed of 30km an hour, and a daily capacity of at least six hundred thousand riders. Good luck and good marking."
+            },
+            "rules": {
+                "toMark": [],
+                "directionEnter": 2,
+                "directionExit": 1,
+                "canSend": true,
+                "canMark": true
+            },
+            "effects": {
+                "timeElapsed": 0,
+                "moneySpent": 0,
+                "doAgendaUpdate": true,
+                "agenda": "Stops in: Northville, Industy Park, The Quay, and Bumbleton Prices < 10B 30 KM/H Average Capcity > 600K"
+            }
+        },
+        {
+            "document": {
+                "header": "Proposal A",
+                "footer": "To: Legislature From: Transit Agency",
+                "body": "Mode: Light Rail Stops: Northville, Upton, Downtown (Old Theatre), Downtown (University), Downtown (Exchange), Seaside, The Quay, Fisher's Row, Bumbleton. Average Speed: 25km Daily Capacity: 300k riders Cost: 4 billion"
+            },
+            "rules": {
+                "toMark": [],
                 "directionEnter": 0,
                 "directionExit": 0,
                 "canSend": true,
                 "canMark": true
             },
             "effects": {
-                "timeElapsed": 80,
-                "moneySpent": 10000000,
-                "doAgendaUpdate": true,
-                "agenda": " - infroce the agenda\n - no lizzard people alowed\n - platform screen doors"
+                "timeElapsed": 34,
+                "moneySpent": 1400000,
+                "doAgendaUpdate": false
             }
         },
-
         {
             "document": {
-                "header": "not implemented",
-                "footer": "also not implemented",
-                "body": "You've completed the game!! Good for you!!"
+                "header": "Proposal B",
+                "footer": "To: Legislature From: Transit Agency",
+                "body": "Mode: Heavy rail, Underground Stops: Northville, Upton, Pinecrest, Hitown, Downtown (Baker's Row), Downtown (University), Downtown (Exchange), Downtown(The Towers), Oceanview, Fisher's Row, Bumbleton, West Park, The Yards. Average Speed: 27km Daily Capacity: 1.2m riders Cost: 14 billion"
+            },
+            "rules": {
+                "toMark": [],
+                "directionEnter": 0,
+                "directionExit": 0,
+                "canSend": true,
+                "canMark": true
+            },
+            "effects": {
+                "timeElapsed": 0,
+                "moneySpent": 1200000,
+                "doAgendaUpdate": false
+            }
+        },
+        {
+            "document": {
+                "header": "Proposal C",
+                "footer": "To: Legislature From: Transit Agency",
+                "body": "Mode: Light Metro, Elevated Stops: Northville, Upton, Downtown (University), Downtown (Exchange), Downtown(The Towers), Oceanview, The Quay, Fisher's Row, Bumbleton, West Park, The Yards. Average Speed: 32km Daily Capacity: 700k riders Cost: 9.6 billion"
+            },
+            "rules": {
+                "toMark": [],
+                "directionEnter": 0,
+                "directionExit": 2,
+                "canSend": true,
+                "canMark": true
+            },
+            "effects": {
+                "timeElapsed": 0,
+                "moneySpent": 1540000,
+                "doAgendaUpdate": true,
+                "agenda": ""
+            }
+        },
+        {
+            "document": {
+                "header": "Subway Project Moves Ahead",
+                "footer": "Column: James Asper",
+                "body": "Just 4 months since the triangle Coalition's ascension to city council, council has approved a initial plan including a tentative route, cost and speed estimates, and the choice of elevated light metro. Despite the excitement, some descent is brewing, with some protesting the lack of a station and others the noise pollution caused by elevated rail rather than tunneled."
+            },
+            "rules": {
+                "toMark": [],
+                "directionEnter": 2,
+                "directionExit": 1,
+                "canSend": true,
+                "canMark": true
+            },
+            "effects": {
+                "timeElapsed": 98,
+                "moneySpent": 0,
+                "doAgendaUpdate": false
+            }
+        },
+        {
+            "document": {
+                "header": "Time Passes.",
+                "footer": "",
+                "body": "..."
+            },
+            "rules": {
+                "toMark": [],
+                "directionEnter": 2,
+                "directionExit": 1,
+                "canSend": true,
+                "canMark": false
+            },
+            "effects": {
+                "timeElapsed": 2628,
+                "moneySpent": 450000000,
+                "doAgendaUpdate": false
+            }
+            
+        },
+        {
+            "document": {
+                "header": "Ground Finally Broken on Subway",
+                "footer": "Column: James Asper",
+                "body": "After three and a half years of delays, and more than half a billion in spending, shovels are finally breaking ground on the Triangle Coalition's signature boondoggle. While many never expected the project to break ground at all, this good news hasn't been enough to save the Triangle Coalition's abysmal chances at reelection. While many individual councilors who were part of the movement still remain popular, opinion polling shows Circle Coalition candidates far ahead on average."
+            },
+            "rules": {
+                "toMark": [],
+                "directionEnter": 2,
+                "directionExit": 1,
+                "canSend": true,
+                "canMark": true
+            },
+            "effects": {
+                "timeElapsed": 1,
+                "moneySpent": 10000000,
+                "doAgendaUpdate": false
+            }
+        },
+        {
+            "document": {
+                "header": "Circle Coalition Wins Election.",
+                "footer": "Column: James Asper",
+                "body": "After a tumultuous race, the elections closed on Saturday revealing an expect slight majority for the Circle Coalition. The Circle Coalition, who campaigned on cutting the budget, promises that their first vote will be to cancel the now twenty billion dollar subway project and initiate consolation on developing a new LRT line instead. While some are sad to see promised subway line, which has been mired in controversy since the beginning, canceled, we can only hope this new LRT line will finally be the transit the city needs."
+            },
+            "rules": {
+                "toMark": [],
+                "directionEnter": 2,
+                "directionExit": 1,
+                "canSend": true,
+                "canMark": true
+            },
+            "effects": {
+                "timeElapsed": 132,
+                "moneySpent": 10000000,
+                "doAgendaUpdate": false
+            }
+        },
+        {
+            "document": {
+                "header": "6 Week Notice",
+                "footer": "To: You From: The Legislature",
+                "body": "Dear employee, while we appreciate the last 8 years of your dedicated work for this city, your position is no longer required.The End"
             },
             "rules": {
                 "toMark": [],
@@ -61,10 +232,10 @@
                 "doAgendaUpdate": false
             }
         }
+
+
+
     ],
-
-
-
     "specialDocuments": {
         "infraction1": {
             "document": {
